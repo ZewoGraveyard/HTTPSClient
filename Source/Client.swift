@@ -84,8 +84,9 @@ extension Client {
         var request = request
         addHeaders(&request)
 
-        let stream: Stream = try connection ?? TCPSSLConnection(to: host, on: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey, certificateChain: certificateChain)
+        let stream: Connection = try connection ?? TCPSSLConnection(to: host, on: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey, certificateChain: certificateChain)
 
+        try stream.open()
         try serializer.serialize(request, to: stream)
 
         while true {
