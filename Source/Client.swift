@@ -216,11 +216,11 @@ extension Request {
     // Warning: The storage key has to be in sync with Zewo.HTTP's upgrade property.
     var onUpgrade: OnUpgrade? {
         get {
-            return storage["request-connection-upgrade"] as? OnUpgrade
+            return storage["request-upgrade"] as? OnUpgrade
         }
 
         set(onUpgrade) {
-            storage["request-connection-upgrade"] = onUpgrade
+            storage["request-upgrade"] = onUpgrade
         }
     }
 
