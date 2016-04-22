@@ -84,7 +84,7 @@ extension Client {
         var request = request
         addHeaders(&request)
 
-        let connection = try self.connection ?? TCPConnection(host: host, port: port)
+        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey , certificateChain: certificateChain)
         try connection.open()
 
         try serializer.serialize(request, to: connection)
@@ -229,7 +229,7 @@ extension Request {
         get {
             return headers["User-Agent"].first
         }
-        
+
         set(userAgent) {
             headers["User-Agent"] = userAgent.map({Header($0)}) ?? []
         }
