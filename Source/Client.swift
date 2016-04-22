@@ -71,7 +71,6 @@ public final class Client: Responder {
 
 extension Client {
     private func addHeaders(_ request: inout Request) {
-        var request = request
         request.host = "\(host):\(port)"
         request.userAgent = "Zewo"
 
