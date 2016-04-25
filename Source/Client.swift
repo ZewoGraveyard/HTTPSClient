@@ -92,8 +92,8 @@ extension Client {
             let data = try connection.receive(upTo: 1024)
             if let response = try parser.parse(data)  {
 
-                if let onUpgrade = request.onUpgrade {
-                    try onUpgrade(response, connection)
+                if let didUpgrade = request.didUpgrade {
+                    try didUpgrade(response, connection)
                 }
 
                 if !keepAlive {
@@ -211,16 +211,16 @@ extension Request {
         }
     }
 
-    typealias OnUpgrade = (Response, Stream) throws -> Void
+    typealias DidUpgrade = (Response, Stream) throws -> Void
 
     // Warning: The storage key has to be in sync with Zewo.HTTP's upgrade property.
-    var onUpgrade: OnUpgrade? {
+    var didUpgrade: DidUpgrade? {
         get {
-            return storage["request-upgrade"] as? OnUpgrade
+            return storage["request-upgrade"] as? DidUpgrade
         }
 
-        set(onUpgrade) {
-            storage["request-upgrade"] = onUpgrade
+        set(didUpgrade) {
+            storage["request-upgrade"] = didUpgrade
         }
     }
 
