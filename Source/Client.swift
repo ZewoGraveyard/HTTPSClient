@@ -83,7 +83,7 @@ extension Client {
         var request = request
         addHeaders(&request)
 
-        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey , certificateChain: certificateChain)
+        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey , certificateChain: certificateChain, SNIHostname: host)
         try connection.open()
 
         try serializer.serialize(request, to: connection)
