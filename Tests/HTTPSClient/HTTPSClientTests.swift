@@ -3,7 +3,9 @@ import XCTest
 
 class HTTPSClientTests: XCTestCase {
     func testReality() {
-        XCTAssert(2 + 2 == 4, "Something is severely wrong here.")
+        func testReality() {
+            XCTAssert(2 + 2 == 4, "Something is severely wrong here.")
+        }
     }
 }
 
