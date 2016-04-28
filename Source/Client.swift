@@ -70,8 +70,19 @@ public final class Client: Responder {
 }
 
 extension Client {
+    
+    private func portStringForHostHeaderField() -> String {
+        if port == 443 {
+            //if it's the default HTTPS port, ignore it. breaks certain
+            //servers when it's explicitly supplied but is allowed to be omitted
+            //http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.23
+            return ""
+        }
+        return ":\(port)"
+    }
+    
     private func addHeaders(_ request: inout Request) {
-        request.host = "\(host):\(port)"
+        request.host = "\(host)\(portStringForHostHeaderField())"
         request.userAgent = "Zewo"
 
         if request.connection.isEmpty {
