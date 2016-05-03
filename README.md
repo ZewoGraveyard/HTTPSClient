@@ -18,6 +18,25 @@ let response = try client.get("/")
 
 ## Installation
 
+### OSX
+
+- Install `openssl` using `brew`
+
+```sh
+brew install openssl
+brew link openssl --force # OpenSSL headers & dylib are not symlinked to /usr/local by default
+```
+
+### Linux
+
+- Install `libssl-dev` using `apt-get`
+
+```sh
+apt-get install libssl-dev
+```
+
+- Add `HTTPSClient` to your `Package.swift`
+
 ```swift
 import PackageDescription
 
