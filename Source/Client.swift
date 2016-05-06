@@ -27,8 +27,8 @@
 @_exported import HTTPSerializer
 
 public enum ClientError: ErrorProtocol {
+    case httpsSchemeRequired
     case hostRequired
-    case portRequired
 }
 
 public final class Client: Responder {
@@ -46,15 +46,16 @@ public final class Client: Responder {
     public var connection: C7.Connection?
 
     public init(uri: URI, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, serializer: S4.RequestSerializer = RequestSerializer(), parser: S4.ResponseParser = ResponseParser(), keepAlive: Bool = false) throws {
+        guard let scheme = uri.scheme where scheme == "https" else {
+            throw ClientError.httpsSchemeRequired
+        }
+
         guard let host = uri.host else {
             throw ClientError.hostRequired
         }
 
-        guard let port = uri.port else {
-            throw ClientError.portRequired
-        }
         self.host = host
-        self.port = port
+        self.port = uri.port ?? 443
         self.verifyBundle = verifyBundle
         self.certificate = certificate
         self.privateKey = privateKey
@@ -71,7 +72,8 @@ public final class Client: Responder {
 
 extension Client {
     private func addHeaders(_ request: inout Request) {
-        request.host = "\(host):\(port)"
+        let port = (self.port == 443) ? "" : ":\(self.port)"
+        request.host = "\(host)\(port)"
         request.userAgent = "Zewo"
 
         if request.connection.isEmpty {
@@ -83,7 +85,7 @@ extension Client {
         var request = request
         addHeaders(&request)
 
-        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey , certificateChain: certificateChain)
+        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey , certificateChain: certificateChain, SNIHostname: host)
         try connection.open()
 
         try serializer.serialize(request, to: connection)
@@ -211,12 +213,19 @@ extension Request {
         }
     }
 
+<<<<<<< HEAD
     typealias DidUpgrade = (Response, Stream) throws -> Void
 
     // Warning: The storage key has to be in sync with Zewo.HTTP's upgrade property.
     var didUpgrade: DidUpgrade? {
         get {
             return storage["request-upgrade"] as? DidUpgrade
+=======
+    // Warning: The storage key has to be in sync with Zewo.HTTP's upgrade property.
+    var didUpgrade: ((Response, Stream) throws -> Void)? {
+        get {
+            return storage["request-upgrade"] as? (Response, Stream) throws -> Void
+>>>>>>> VeniceX/master
         }
 
         set(didUpgrade) {
