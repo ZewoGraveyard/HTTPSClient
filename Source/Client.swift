@@ -213,19 +213,10 @@ extension Request {
         }
     }
 
-<<<<<<< HEAD
-    typealias DidUpgrade = (Response, Stream) throws -> Void
-
-    // Warning: The storage key has to be in sync with Zewo.HTTP's upgrade property.
-    var didUpgrade: DidUpgrade? {
-        get {
-            return storage["request-upgrade"] as? DidUpgrade
-=======
     // Warning: The storage key has to be in sync with Zewo.HTTP's upgrade property.
     var didUpgrade: ((Response, Stream) throws -> Void)? {
         get {
             return storage["request-upgrade"] as? (Response, Stream) throws -> Void
->>>>>>> VeniceX/master
         }
 
         set(didUpgrade) {
