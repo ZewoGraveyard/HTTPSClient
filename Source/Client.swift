@@ -74,8 +74,25 @@ public final class Client: Responder {
         self.keepAlive = keepAlive
     }
 
-    public convenience init(uri: String, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, serializer: S4.RequestSerializer = RequestSerializer(), parser: S4.ResponseParser = ResponseParser(), keepAlive: Bool = false) throws {
-        try self.init(uri: URI(uri), verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey, certificateChain: certificateChain, serializer: serializer, parser: parser, keepAlive: keepAlive)
+    public convenience init(uri: String,
+              verifyBundle: String? = nil,
+              certificate: String? = nil,
+              privateKey: String? = nil,
+              certificateChain: String? = nil,
+              cipherList: String? = nil,
+              serializer: S4.RequestSerializer = RequestSerializer(),
+              parser: S4.ResponseParser = ResponseParser(),
+              keepAlive: Bool = false) throws {
+        try self.init(uri: URI(uri),
+         verifyBundle: verifyBundle,
+         certificate: certificate,
+         privateKey: privateKey,
+         certificateChain:
+         certificateChain,
+         cipherList,
+         serializer: serializer,
+         parser: parser,
+         keepAlive: keepAlive)
     }
 }
 
