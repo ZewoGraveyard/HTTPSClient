@@ -38,6 +38,7 @@ public final class Client: Responder {
     public let certificate: String?
     public let privateKey: String?
     public let certificateChain: String?
+    public let cipherList: String?
 
     public let serializer: S4.RequestSerializer
     public let parser: S4.ResponseParser
@@ -45,7 +46,14 @@ public final class Client: Responder {
 
     public var connection: C7.Connection?
 
-    public init(uri: URI, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, serializer: S4.RequestSerializer = RequestSerializer(), parser: S4.ResponseParser = ResponseParser(), keepAlive: Bool = false) throws {
+    public init(uri: URI, verifyBundle: String? = nil,
+                certificate: String? = nil,
+                privateKey: String? = nil,
+                certificateChain: String? = nil,
+                cipherList: String? = nil,
+                serializer: S4.RequestSerializer = RequestSerializer(),
+                parser: S4.ResponseParser = ResponseParser(),
+                keepAlive: Bool = false) throws {
         guard let scheme = uri.scheme where scheme == "https" else {
             throw ClientError.httpsSchemeRequired
         }
@@ -60,6 +68,7 @@ public final class Client: Responder {
         self.certificate = certificate
         self.privateKey = privateKey
         self.certificateChain = certificateChain
+        self.cipherList = cipherList
         self.serializer = serializer
         self.parser = parser
         self.keepAlive = keepAlive
@@ -85,7 +94,10 @@ extension Client {
         var request = request
         addHeaders(&request)
 
-        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey , certificateChain: certificateChain, SNIHostname: host)
+        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle,
+                                                                 certificate: certificate, privateKey: privateKey ,
+                                                                 certificateChain: certificateChain, SNIHostname: host,
+                                                                 cipherList: cipherList)
         try connection.open()
 
         try serializer.serialize(request, to: connection)
