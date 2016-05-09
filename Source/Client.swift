@@ -87,9 +87,8 @@ public final class Client: Responder {
          verifyBundle: verifyBundle,
          certificate: certificate,
          privateKey: privateKey,
-         certificateChain:
-         certificateChain,
-         cipherList,
+         certificateChain: certificateChain,
+         cipherList: cipherList,
          serializer: serializer,
          parser: parser,
          keepAlive: keepAlive)
