@@ -38,14 +38,16 @@ public final class Client: Responder {
     public let certificate: String?
     public let privateKey: String?
     public let certificateChain: String?
-
     public let serializer: S4.RequestSerializer
     public let parser: S4.ResponseParser
     public let keepAlive: Bool
+    public let connectionTimeout: Double
+    public let requestTimeout: Double
+    public let bufferSize: Int
 
     public var connection: C7.Connection?
 
-    public init(uri: URI, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, serializer: S4.RequestSerializer = RequestSerializer(), parser: S4.ResponseParser = ResponseParser(), keepAlive: Bool = false) throws {
+    public init(uri: URI, configuration: ClientConfiguration = ClientConfiguration()) throws {
         guard let scheme = uri.scheme where scheme == "https" else {
             throw ClientError.httpsSchemeRequired
         }
@@ -56,42 +58,63 @@ public final class Client: Responder {
 
         self.host = host
         self.port = uri.port ?? 443
-        self.verifyBundle = verifyBundle
-        self.certificate = certificate
-        self.privateKey = privateKey
-        self.certificateChain = certificateChain
-        self.serializer = serializer
-        self.parser = parser
-        self.keepAlive = keepAlive
+        self.verifyBundle = configuration.verifyBundle
+        self.certificate = configuration.certificate
+        self.privateKey = configuration.privateKey
+        self.certificateChain = configuration.certificateChain
+        self.serializer = configuration.serializer
+        self.parser = configuration.parser
+        self.keepAlive = configuration.keepAlive
+        self.connectionTimeout = configuration.connectionTimeout
+        self.requestTimeout = configuration.requestTimeout
+        self.bufferSize = configuration.bufferSize
     }
 
-    public convenience init(uri: String, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, serializer: S4.RequestSerializer = RequestSerializer(), parser: S4.ResponseParser = ResponseParser(), keepAlive: Bool = false) throws {
-        try self.init(uri: URI(uri), verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey, certificateChain: certificateChain, serializer: serializer, parser: parser, keepAlive: keepAlive)
+    public convenience init(uri: String, configuration: ClientConfiguration = ClientConfiguration()) throws {
+        try self.init(uri: URI(uri), configuration: configuration)
     }
 }
 
 extension Client {
-    private func addHeaders(_ request: inout Request) {
+    private func addHeaders(to request: inout Request) {
         let port = (self.port == 443) ? "" : ":\(self.port)"
         request.host = "\(host)\(port)"
         request.userAgent = "Zewo"
 
-        if request.connection.isEmpty {
+        if !keepAlive && request.connection.isEmpty {
             request.connection = "close"
         }
     }
 
     public func respond(to request: Request) throws -> Response {
         var request = request
-        addHeaders(&request)
+        addHeaders(to: &request)
 
-        let connection = try self.connection ?? TCPSSLConnection(host: host, port: port, verifyBundle: verifyBundle, certificate: certificate, privateKey: privateKey , certificateChain: certificateChain, SNIHostname: host)
-        try connection.open()
+        let connection: Connection
 
+        if let c = self.connection {
+            connection = c
+        } else {
+            connection = try TCPSSLConnection(
+                host: host,
+                port: port,
+                verifyBundle: verifyBundle,
+                certificate: certificate,
+                privateKey: privateKey,
+                certificateChain: certificateChain,
+                SNIHostname: host
+            )
+
+            try connection.open(timingOut: now() + connectionTimeout)
+        }
+
+        let requestDeadline = now() + requestTimeout
+
+        // TODO: Add deadline... S4.RequestSerializer.serialize(_:to:timingOut:)
         try serializer.serialize(request, to: connection)
 
         while true {
-            let data = try connection.receive(upTo: 1024)
+            let data = try connection.receive(upTo: bufferSize, timingOut: requestDeadline)
             if let response = try parser.parse(data)  {
 
                 if let didUpgrade = request.didUpgrade {
@@ -109,13 +132,13 @@ extension Client {
 
     public func send(_ request: Request, middleware: Middleware...) throws -> Response {
         var request = request
-        addHeaders(&request)
+        addHeaders(to: &request)
         return try middleware.chain(to: self).respond(to: request)
     }
 
     private func send(_ request: Request, middleware: [Middleware]) throws -> Response {
         var request = request
-        addHeaders(&request)
+        addHeaders(to: &request)
         return try middleware.chain(to: self).respond(to: request)
     }
 }
