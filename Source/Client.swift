@@ -144,7 +144,12 @@ extension Client {
     private func send(_ request: Request, middleware: [Middleware]) throws -> Response {
         var request = request
         addHeaders(to: &request)
-        return try middleware.chain(to: self).respond(to: request)
+        let response = try middleware.chain(to: self).respond(to: request)
+        if 400..<600 ~= response.status.statusCode {
+            //error response code, destroy the connection
+            self.connection = nil
+        }
+        return response
     }
 }
 
