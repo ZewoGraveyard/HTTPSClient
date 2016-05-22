@@ -29,6 +29,7 @@
 public enum ClientError: ErrorProtocol {
     case httpsSchemeRequired
     case hostRequired
+    case brokenConnection
 }
 
 public final class Client: Responder {
@@ -106,6 +107,7 @@ extension Client {
             )
 
             try connection.open(timingOut: now() + connectionTimeout)
+            self.connection = connection
         }
 
         let requestDeadline = now() + requestTimeout
@@ -126,6 +128,9 @@ extension Client {
                 }
 
                 return response
+            } else if data.count == 0 {
+                //no data received, connection got broken
+                throw ClientError.brokenConnection
             }
         }
     }
