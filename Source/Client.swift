@@ -103,7 +103,8 @@ extension Client {
                 certificate: certificate,
                 privateKey: privateKey,
                 certificateChain: certificateChain,
-                SNIHostname: host
+                SNIHostname: host,
+                timingOut: now() + connectionTimeout
             )
 
             try connection.open(timingOut: now() + connectionTimeout)
