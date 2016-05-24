@@ -47,7 +47,7 @@ public struct ClientConfiguration {
         self.bufferSize = bufferSize
     }
 
-    public init(_ build: ClientConfigurationBuilder -> Void) {
+    public init(_ build: (ClientConfigurationBuilder) -> Void) {
         let configuration = ClientConfigurationBuilder()
         build(configuration)
 
