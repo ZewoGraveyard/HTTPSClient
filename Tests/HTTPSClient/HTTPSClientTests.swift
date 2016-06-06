@@ -32,7 +32,7 @@ class HTTPSClientTests: XCTestCase {
 }
 
 extension HTTPSClientTests {
-    static var allTests : [(String, HTTPSClientTests -> () throws -> Void)] {
+    static var allTests : [(String, (HTTPSClientTests) -> () throws -> Void)] {
         return [
            ("testSchemeOtherThanHTTPSFails", testSchemeOtherThanHTTPSFails),
         ]
